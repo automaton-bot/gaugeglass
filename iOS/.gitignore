@@ -1,0 +1,5 @@
+.validation/
+__pycache__/
+Gaugeglass.xcodeproj/
+DerivedData/
+*.xcuserstate

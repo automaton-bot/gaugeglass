@@ -1,0 +1,42 @@
+{
+  "name": "Gaugeglass",
+  "options": {
+    "minimumXcodeGenVersion": "2.44.1",
+    "xcodeVersion": "16.0",
+    "deploymentTarget": { "iOS": "16.0" }
+  },
+  "packages": {
+    "GaugeglassCore": { "path": ".." }
+  },
+  "targets": {
+    "Gaugeglass": {
+      "type": "application",
+      "platform": "iOS",
+      "deploymentTarget": "16.0",
+      "sources": [ { "path": "Gaugeglass", "excludes": [ "Info.plist" ] } ],
+      "dependencies": [ { "package": "GaugeglassCore", "product": "GaugeglassCore" } ],
+      "settings": {
+        "base": {
+          "SWIFT_VERSION": "6.0",
+          "SWIFT_STRICT_CONCURRENCY": "complete",
+          "PRODUCT_BUNDLE_IDENTIFIER": "com.automaton.gaugeglass",
+          "PRODUCT_NAME": "Gaugeglass",
+          "INFOPLIST_FILE": "Gaugeglass/Info.plist",
+          "GENERATE_INFOPLIST_FILE": "NO",
+          "TARGETED_DEVICE_FAMILY": "1,2",
+          "CURRENT_PROJECT_VERSION": "1",
+          "MARKETING_VERSION": "0.1.0",
+          "CODE_SIGN_STYLE": "Automatic",
+          "ENABLE_USER_SCRIPT_SANDBOXING": "YES"
+        }
+      }
+    }
+  },
+  "schemes": {
+    "Gaugeglass": {
+      "build": { "targets": { "Gaugeglass": "all" } },
+      "run": { "config": "Debug" },
+      "archive": { "config": "Release" }
+    }
+  }
+}
