@@ -4,9 +4,9 @@
 
 An independently written SwiftUI instrument panel and foreground CoreBluetooth adapter are in `iOS/Gaugeglass/`. The app consumes the local parent Swift package's `GaugeglassCore`; there are no app runtime dependencies beyond Apple frameworks and that package. Minimum deployment target: iOS 16. Swift language mode: 6.
 
-**Apple SDK compilation, XcodeGen generation, simulator/device launch, signing, and hardware testing have NOT been performed.** Linux checks below verify the portable app policy with the real core, Swift grammar of Apple-specific sources, and JSON/plist/config invariants. Grammar checking is not typechecking against SwiftUI/CoreBluetooth. This is authored app source for a later Mac build, not an installable or hardware-validated release.
+**Apple SDK simulator compilation and XcodeGen generation PASSED in GitHub run `38291069511` for commit `e4ee0f371645bca4ced845a73e0e3c3e58b8728a`.** Xcode 16.4 / Swift 6.1.2 produced an unsigned iOS Simulator app with x86_64 and arm64 executables. The 65 portable core tests and app-policy checks also passed on macOS. Simulator/device launch, physical-device compilation, signing, sideloading, and hardware testing have NOT been performed. Linux grammar/config checks below remain useful but are not Apple SDK typechecking. See `github-build.md` for the recorded result; this is not yet a phone-installable or hardware-validated release.
 
-No proprietary source, assets, captured packets, original package data, credentials, signing identity, CI/build workflow, or equipment control implementation is included.
+No proprietary source, assets, captured packets, original package data, credentials, signing identity, or equipment control implementation is included. A manual-only shell-based unsigned compile workflow is now included under `.github/workflows/ios-simulator.yml`.
 
 ## Files
 
@@ -22,7 +22,7 @@ No proprietary source, assets, captured packets, original package data, credenti
 
 ## Generate and compile later on a Mac
 
-Use Xcode 16 or later with a Swift 6 compiler and an appropriate iOS SDK. Install **XcodeGen 2.44.1** (the spec requires at least that version; use that version for reproduction). XcodeGen is a project-generation dependency on the build host, not a bundled/runtime dependency. The JSON format, local package `path`, target package/product dependency and scheme fields are based on XcodeGen's own 2.44.1 `Docs/ProjectSpec.md`. The JSON and paths are checked here, but XcodeGen has not interpreted the spec yet.
+Use Xcode 16 or later with a Swift 6 compiler and an appropriate iOS SDK. Install **XcodeGen 2.44.1** (the spec requires at least that version; use that version for reproduction). XcodeGen is a project-generation dependency on the build host, not a bundled/runtime dependency. The JSON format, local package `path`, target package/product dependency and scheme fields are based on XcodeGen's own 2.44.1 `Docs/ProjectSpec.md`. Actual interpretation and project generation passed with that version in the recorded GitHub build.
 
 From the repository root:
 
@@ -105,7 +105,7 @@ Apple documents notification subscription success via `peripheral(_:didUpdateNot
 
 ## Remaining acceptance gates
 
-1. Run XcodeGen and the unsigned simulator build above; fix any Apple SDK availability/type/concurrency diagnostics. Linux grammar checks cannot verify SDK overloads or runtime actor assumptions.
+1. **Simulator compile gate passed** in the recorded GitHub run. Repeat generation/build after source changes. Linux grammar checks still cannot verify SDK overloads; a successful Apple SDK compile does not verify runtime actor assumptions or simulator launch.
 2. Run on iPhone/iPad: permission denial/grant, powered-off/reset Bluetooth, inactive/background transitions, accessible large text/layout, picker dismissal, saved UUID persistence and reconnect.
 3. Test delayed terminal callbacks, rapid device changes, cancel-then-connect, service invalidation, write errors and notification loss. Specifically verify peripheral-object reuse does not leak previous-generation callbacks, and a terminal event always releases the barrier where expected.
 4. Verify exact full GATT UUIDs/properties and source auth bytes against the actual hardware model with a read-only measurement session. Confirm required authentication timing, challenge/status shape, complete packet delivery, checksum acceptance, no needed keepalive/query, cloud independence and notification cadence.

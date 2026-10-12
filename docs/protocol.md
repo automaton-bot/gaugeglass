@@ -41,4 +41,4 @@ Important risks for the next milestone:
 
 ## Safety and verification gates
 
-No equipment writes, valve controls, firmware operations, calibration, or replay on reconnection exist. Retained readings must later be visibly stale on disconnect and remain stale until fresh validated events. No iOS build or real Bluetooth tests have occurred. Hardware validation is required before trusting measurements or introducing control.
+The portable core has no transport writes; the authored iOS adapter allows authentication only, not equipment-setting or valve-control writes. Firmware operations, calibration, and control replay are absent. Retained readings are invalidated on disconnect and stay stale until fresh validated events. An unsigned iOS Simulator build passed in GitHub run `38291069511`; simulator/device execution and real Bluetooth tests have not occurred. Hardware validation is required before trusting measurements or introducing control.

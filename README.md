@@ -4,7 +4,7 @@ Independent instrument-panel app in development for Bluetooth HVAC equipment. In
 
 ## Current milestone
 
-This repository contains a **tested portable Swift core and authored native iOS app source**: packet/authentication primitives, passive measurements, connection/freshness state, an offline inspector, a CoreBluetooth adapter, and a SwiftUI instrument panel. It is **not yet an installable or hardware-tested iOS application**. All **65 XCTest tests pass in debug and release on Linux** using generated/source-derived fixtures. Portable app-policy checks, app Swift grammar checks, and JSON/plist/source invariants also pass. **XcodeGen project generation, Apple SDK typechecking/builds, signing, sideloading, and Bluetooth hardware tests have not been performed.**
+This repository contains a **tested portable Swift core and simulator-compiled native iOS app**: packet/authentication primitives, passive measurements, connection/freshness state, an offline inspector, a CoreBluetooth adapter, and a SwiftUI instrument panel. It is **not yet a phone-installable or hardware-tested release**. All **65 XCTest tests pass in debug and release on Linux**, and all **65 passed on macOS** using generated/source-derived fixtures. Portable app-policy checks also passed on macOS. **GitHub run `38291069511` successfully generated the Xcode project and compiled the unsigned iOS Simulator app with Xcode 16.4 / Swift 6.1.2**, including Intel and Apple Silicon simulator executables. Simulator launch, physical-device compilation/signing, sideloading, and Bluetooth hardware tests have not been performed. See [the recorded build result](docs/github-build.md).
 
 No valve operations exist. The offline inspector never transmits its computed reply. The iOS adapter's sole BLE value-write path is restricted to source-supported authentication; it has no settings, calibration, firmware, or equipment-control write path. Tests are not hardware captures, and wire behavior remains provisional until measured on equipment.
 
@@ -26,9 +26,9 @@ The first example is a generated authentication challenge. The inspector compute
 - `gaugeglass-inspect`: offline diagnostic CLI.
 - Measurement parsing retains raw bytes and uncertainty; temperature units default to unknown and vacuum scaling is provisional. See [measurement notes](docs/measurements.md).
 - Saved-device connection intent and stale-reading rules are portable, not a live transport. See [session-state notes](docs/session-state.md).
-- `iOS/Gaugeglass`: foreground-only CoreBluetooth adapter and SwiftUI instrument panel, explicitly uncompiled against Apple SDKs.
-- `iOS/project.json`: reproducible XcodeGen configuration using the local core package; generation remains unverified.
-- See [iOS source, Linux validation, and later Mac build instructions](docs/ios-app.md). The next acceptance gate is an unsigned Apple-platform compile, followed by signing and read-only hardware tests.
+- `iOS/Gaugeglass`: foreground-only CoreBluetooth adapter and SwiftUI instrument panel; Apple SDK simulator compilation passed, but runtime/hardware behavior is unverified.
+- `iOS/project.json`: XcodeGen configuration using the local core package; actual generation passed with pinned XcodeGen 2.44.1.
+- See [iOS source and build instructions](docs/ios-app.md) and the [manual GitHub compile workflow](docs/github-build.md). Remaining gates include simulator launch checks and a device build/signing path, followed by read-only hardware tests.
 
 Keep research downloads, proprietary source/assets, credentials, and signing material outside this repository. Do not carry official-app receive hooks into the client: some automatically change settings. Source-supported field widths and units vary by device family; unknowns must remain unknown rather than becoming plausible-looking readings.
 
