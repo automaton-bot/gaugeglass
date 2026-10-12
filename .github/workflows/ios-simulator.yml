@@ -1,0 +1,85 @@
+name: Unsigned iOS simulator compile
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gaugeglass-unsigned-simulator
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    runs-on: macos-15-intel
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+    steps:
+      - name: Check out exact public commit without third-party Actions
+        run: |
+          git init .
+          git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Inspect selected Apple toolchain
+        run: |
+          test -d "$DEVELOPER_DIR"
+          xcodebuild -version
+          swift --version
+          xcodebuild -showsdks
+
+      - name: Obtain checksum-pinned XcodeGen 2.44.1
+        run: |
+          tool_directory="$RUNNER_TEMP/xcodegen-2.44.1"
+          mkdir -p "$tool_directory"
+          curl --fail --location --retry 2 --connect-timeout 15 --max-time 120 \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.44.1/xcodegen.zip \
+            --output "$tool_directory/xcodegen.zip"
+          printf '%s  %s\n' \
+            a2e905fb68446e9bb4008cdfe2e13e3f176d0cbcca828b71770f8e53fca91b73 \
+            "$tool_directory/xcodegen.zip" | shasum -a 256 -c -
+          unzip -q "$tool_directory/xcodegen.zip" -d "$tool_directory"
+          "$tool_directory/xcodegen/bin/xcodegen" --version
+
+      - name: Run portable core tests on macOS
+        run: swift test --jobs 2
+
+      - name: Run portable app-policy checks on macOS
+        run: |
+          validation="$RUNNER_TEMP/gaugeglass-policy"
+          mkdir -p "$validation"
+          swiftc -swift-version 6 -emit-library -emit-module -module-name GaugeglassCore \
+            -emit-module-path "$validation/GaugeglassCore.swiftmodule" \
+            Sources/GaugeglassCore/*.swift -o "$validation/libGaugeglassCore.dylib"
+          swiftc -swift-version 6 -parse-as-library -I "$validation" -L "$validation" \
+            -lGaugeglassCore -Xlinker -rpath -Xlinker "$validation" \
+            iOS/Gaugeglass/InstrumentPolicy.swift iOS/Tests/PolicyChecks.swift \
+            -o "$validation/policy-checks"
+          "$validation/policy-checks"
+
+      - name: Generate project and compile unsigned simulator application
+        working-directory: iOS
+        run: |
+          "$RUNNER_TEMP/xcodegen-2.44.1/xcodegen/bin/xcodegen" generate --spec project.json
+          xcodebuild -list -project Gaugeglass.xcodeproj
+          xcodebuild -project Gaugeglass.xcodeproj -scheme Gaugeglass \
+            -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' build
+
+      - name: Verify simulator build product
+        run: |
+          product="iOS/DerivedData/Build/Products/Debug-iphonesimulator/Gaugeglass.app"
+          test -d "$product"
+          test -f "$product/Gaugeglass"
+          file "$product/Gaugeglass"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$product/Info.plist"
+          printf '%s\n' 'Unsigned simulator compile verified. Not a signed device IPA or Bluetooth hardware test.'
