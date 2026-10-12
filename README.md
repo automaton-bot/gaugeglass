@@ -4,7 +4,7 @@ Independent instrument-panel app in development for Bluetooth HVAC equipment. In
 
 ## Current milestone
 
-This repository currently contains a **working offline Swift protocol core and packet inspector**, not an installable iOS application. Hex parsing, packet inspection, the observed checksum, and authentication challenge/reply primitives compile and have Linux unit tests. No Bluetooth connection, physical readings, valve control, Apple-platform build, signing, or sideload test has been performed.
+This repository currently contains a **tested portable Swift protocol core, passive measurement decoder, connection/freshness model, and offline packet inspector**, not an installable iOS application. All **65 XCTest tests pass in debug and release on Linux** using generated/source-derived fixtures. No Bluetooth connection, physical readings, valve control, Apple-platform build, signing, or sideload test has been performed.
 
 No valve operations exist. Computing an authentication response does not transmit it. Tests use generated/source-derived fixtures, never hardware captures. Wire behavior remains provisional until measured on equipment.
 
@@ -22,10 +22,11 @@ The first example is a generated authentication challenge. The inspector compute
 
 ## Architecture and boundaries
 
-- `GaugeglassCore`: dependency-free, portable packet/authentication code.
+- `GaugeglassCore`: dependency-free packet/authentication code, bounded family-aware measurement decoding, and deterministic connection/freshness state.
 - `gaugeglass-inspect`: offline diagnostic CLI.
-- Next: bounded family-aware measurement decoding and stale-reading/connection state.
-- Later: CoreBluetooth adapter, SwiftUI instrument panel, and an Apple-platform build/signing path.
+- Measurement parsing retains raw bytes and uncertainty; temperature units default to unknown and vacuum scaling is provisional. See [measurement notes](docs/measurements.md).
+- Saved-device connection intent and stale-reading rules are portable, not a live transport. See [session-state notes](docs/session-state.md).
+- Next: reviewed CoreBluetooth adapter and SwiftUI instrument-panel source, then an Apple-platform build/signing path.
 
 Keep research downloads, proprietary source/assets, credentials, and signing material outside this repository. Do not carry official-app receive hooks into the client: some automatically change settings. Source-supported field widths and units vary by device family; unknowns must remain unknown rather than becoming plausible-looking readings.
 
